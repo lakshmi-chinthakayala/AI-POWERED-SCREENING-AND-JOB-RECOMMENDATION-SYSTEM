@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Screening & Job Recommendation System | B.Tech AI Project</title>
+    <meta name="description" content="AI-powered Resume Parser, Skill Extractor, Resume Scorer, and Job Recommendation System built with Python, FastAPI, NLP, and Machine Learning.">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81'
+                        },
+                        darkbg: '#0f172a',
+                        darkcard: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Lucide Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Dashboard Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showView('landing')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-[#6366f1] fa-brain text-xl text-white"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-indigo-400 bg-clip-text text-transparent">ResuMatch AI</span>
+                    <span class="hidden sm:inline-block ml-2 text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium border border-indigo-500/30">B.Tech Project</span>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center gap-1 bg-slate-800/60 p-1.5 rounded-xl border border-slate-700/50">
+                <button onclick="showView('landing')" id="nav-landing" class="nav-btn px-4 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition">Home</button>
+                <button onclick="showView('upload')" id="nav-upload" class="nav-btn px-4 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition">Upload Resume</button>
+                <button onclick="showView('analysis')" id="nav-analysis" class="nav-btn px-4 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition">Analysis & Score</button>
+                <button onclick="showView('recommendations')" id="nav-recommendations" class="nav-btn px-4 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition">Jobs & Skill Gap</button>
+                <button onclick="showView('jobs')" id="nav-jobs" class="nav-btn px-4 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition">Job Search</button>
+                <button onclick="showView('dashboard')" id="nav-dashboard" class="nav-btn px-4 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition">Dashboard</button>
+            </div>
+
+            <!-- Auth Buttons -->
+            <div class="flex items-center gap-3">
+                <div id="auth-section">
+                    <button onclick="openAuthModal()" class="px-4 py-2 text-sm font-medium bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-lg shadow-md hover:shadow-indigo-500/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login / Register
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- ================= PAGE 1: LANDING PAGE ================= -->
+        <section id="view-landing" class="space-y-16">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-slate-900 via-slate-900/90 to-indigo-950/40 p-8 sm:p-12 border border-slate-800 text-center space-y-6">
+                <div class="absolute -top-24 -left-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold uppercase tracking-wider">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Artificial Intelligence & Machine Learning Project
+                </div>
+
+                <h1 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight max-w-4xl mx-auto">
+                    AI Resume Screening & <br class="hidden sm:inline">
+                    <span class="bg-gradient-to-r from-indigo-400 via-violet-300 to-pink-400 bg-clip-text text-transparent">Job Recommendation System</span>
+                </h1>
+
+                <p class="text-slate-300 text-lg max-w-2xl mx-auto font-normal leading-relaxed">
+                    Upload your resume in PDF or DOCX format. Our NLP engine extracts your candidate details, categorizes 100+ technical skills, calculates an application-generated Resume Score (0-100), and matches you with top suitable job roles using TF-IDF Vectorization and Cosine Similarity.
+                </p>
+
+                <div class="flex flex-wrap justify-center gap-4 pt-4">
+                    <button onclick="showView('upload')" class="px-7 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                        <i class="fa-solid fa-file-arrow-up"></i> Analyze My Resume
+                    </button>
+                    <button onclick="showView('jobs')" class="px-7 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold rounded-xl border border-slate-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-briefcase"></i> Explore 30+ Sample Jobs
+                    </button>
+                    <button onclick="loadSampleResumeDemo('sample_ai_engineer.pdf')" class="px-7 py-3.5 bg-violet-900/40 hover:bg-violet-900/60 text-violet-200 font-semibold rounded-xl border border-violet-700/50 transition flex items-center gap-2">
+                        <i class="fa-solid fa-play"></i> Quick Demo Load
+                    </button>
+                </div>
+            </div>
+
+            <!-- Key Features Grid -->
+            <div class="space-y-6">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-white">System Architecture & Features</h2>
+                    <p class="text-slate-400 mt-2">Designed for B.Tech Final Year Viva Demonstration</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 space-y-3 hover:border-indigo-500/50 transition">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-file-invoice"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">1. NLP Resume Parsing</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Extracts structured contact info, education history, projects, certifications, and technical skills across 8 core domains using regular expressions and SpaCy text processing.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 space-y-3 hover:border-violet-500/50 transition">
+                        <div class="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">2. Resume Scorer (0-100)</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Calculates a multi-factor score breakdown based on Skills (30%), Experience (20%), Projects (20%), Education (15%), Certifications (10%), and Profile Completeness (5%).
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 space-y-3 hover:border-pink-500/50 transition">
+                        <div class="w-12 h-12 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-network-wired"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">3. TF-IDF & Skill Gap Engine</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Vectorizes text and calculates Cosine Similarity + Skill Overlap against 30+ realistic job listings. Provides customized learning recommendations for missing skills.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How It Works Step-by-Step -->
+            <div class="bg-slate-900/40 p-8 rounded-3xl border border-slate-800/80 space-y-8">
+                <div class="text-center space-y-2">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">How The Recommendation Engine Works</h2>
+                    <p class="text-slate-400">Step-by-step workflow from upload to job match ranking</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-3">
+                        <div class="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center mx-auto text-sm">1</div>
+                        <h4 class="font-semibold text-white">Resume Upload</h4>
+                        <p class="text-xs text-slate-400">Drag & drop PDF or DOCX file. System validates extension and file integrity.</p>
+                    </div>
+                    <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-3">
+                        <div class="w-10 h-10 rounded-full bg-violet-600 text-white font-bold flex items-center justify-center mx-auto text-sm">2</div>
+                        <h4 class="font-semibold text-white">NLP Extraction</h4>
+                        <p class="text-xs text-slate-400">Normalizes text and categorizes 100+ technical skills into Programming, AI, Web, and Cloud.</p>
+                    </div>
+                    <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-3">
+                        <div class="w-10 h-10 rounded-full bg-pink-600 text-white font-bold flex items-center justify-center mx-auto text-sm">3</div>
+                        <h4 class="font-semibold text-white">Matching Algorithm</h4>
+                        <p class="text-xs text-slate-400">Computes 45% TF-IDF Similarity + 35% Skill Match + 10% Experience + 10% Education.</p>
+                    </div>
+                    <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-3">
+                        <div class="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center mx-auto text-sm">4</div>
+                        <h4 class="font-semibold text-white">Skill Gap Recommendations</h4>
+                        <p class="text-xs text-slate-400">Displays top recommended jobs, matching vs missing skills, and learning topics.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 2: RESUME UPLOAD PAGE ================= -->
+        <section id="view-upload" class="hidden max-w-4xl mx-auto space-y-8">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-bold text-white">Upload Your Resume</h2>
+                <p class="text-slate-400">Support for PDF (.pdf) and Word (.docx) documents up to 10MB</p>
+            </div>
+
+            <!-- Upload Box -->
+            <div class="bg-slate-900 p-8 rounded-3xl border-2 border-dashed border-slate-700 hover:border-indigo-500 transition text-center space-y-6" id="drop-zone">
+                <div class="w-20 h-20 mx-auto rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-3xl">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="text-xl font-semibold text-white">Drag & drop your resume file here</h3>
+                    <p class="text-sm text-slate-400">or click to browse from your computer</p>
+                </div>
+
+                <input type="file" id="resume-file-input" accept=".pdf,.docx" class="hidden">
+                <button onclick="document.getElementById('resume-file-input').click()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg transition">
+                    Browse File
+                </button>
+
+                <!-- Selected File Display -->
+                <div id="file-info" class="hidden bg-slate-800/80 p-4 rounded-xl border border-slate-700 max-w-md mx-auto flex items-center justify-between">
+                    <div class="flex items-center gap-3 text-left">
+                        <i class="fa-solid fa-file-pdf text-indigo-400 text-2xl" id="file-icon"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-white truncate max-w-[200px]" id="file-name">resume.pdf</p>
+                            <p class="text-xs text-slate-400" id="file-size">1.2 MB</p>
+                        </div>
+                    </div>
+                    <button onclick="removeSelectedFile()" class="text-slate-400 hover:text-red-400 text-sm p-1">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+
+                <!-- Analyze Button -->
+                <div id="upload-action" class="hidden pt-2">
+                    <button onclick="uploadAndAnalyzeResume()" class="px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-2 mx-auto">
+                        <i class="fa-solid fa-bolt"></i> Analyze Resume Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pre-loaded Sample Resumes Selector (for Viva Demo) -->
+            <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-indigo-400"></i> One-Click Demo Sample Resumes
+                    </h3>
+                    <span class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full">10 Profiles Ready</span>
+                </div>
+                <p class="text-xs text-slate-400">Select any sample profile to analyze instantly without needing to upload your own file during project viva:</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="sample-resumes-grid">
+                    <button onclick="loadSampleResumeDemo('sample_ai_engineer.pdf')" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 rounded-xl border border-slate-700 text-left transition flex items-center justify-between">
+                        <div class="truncate">
+                            <p class="text-sm font-semibold text-white">Alex Mercer (PDF)</p>
+                            <p class="text-xs text-slate-400">AI Engineer Profile</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-indigo-400"></i>
+                    </button>
+                    <button onclick="loadSampleResumeDemo('sample_ml_engineer.docx')" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 rounded-xl border border-slate-700 text-left transition flex items-center justify-between">
+                        <div class="truncate">
+                            <p class="text-sm font-semibold text-white">Priya Sharma (DOCX)</p>
+                            <p class="text-xs text-slate-400">ML & Scikit-Learn Profile</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-indigo-400"></i>
+                    </button>
+                    <button onclick="loadSampleResumeDemo('sample_data_scientist.pdf')" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 rounded-xl border border-slate-700 text-left transition flex items-center justify-between">
+                        <div class="truncate">
+                            <p class="text-sm font-semibold text-white">David Chen (PDF)</p>
+                            <p class="text-xs text-slate-400">Data Scientist & SQL</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-indigo-400"></i>
+                    </button>
+                    <button onclick="loadSampleResumeDemo('sample_python_dev.docx')" class="p-3 bg-slate-800/80 hover:bg-slate-700/80 rounded-xl border border-slate-700 text-left transition flex items-center justify-between">
+                        <div class="truncate">
+                            <p class="text-sm font-semibold text-white">Sarah Jenkins (DOCX)</p>
+                            <p class="text-xs text-slate-400">Python & FastAPI Dev</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-indigo-400"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 3: RESUME ANALYSIS PAGE ================= -->
+        <section id="view-analysis" class="hidden space-y-8">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-white" id="an-candidate-name">Candidate Resume Analysis</h2>
+                    <p class="text-slate-400 text-sm" id="an-filename">Source file: sample_resume.pdf</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="showView('recommendations')" class="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-sm font-semibold rounded-xl shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye"></i> View Job Recommendations & Skill Gap
+                    </button>
+                </div>
+            </div>
+
+            <!-- Top Grid: Score Radial & Contact Info -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Resume Score Card -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4 text-center flex flex-col justify-center items-center">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Application Resume Score</h3>
+                    
+                    <div class="relative w-36 h-36 flex items-center justify-center">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path id="score-circle-path" class="text-indigo-500 transition-all duration-1000 ease-out" stroke-dasharray="82, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        </svg>
+                        <div class="absolute flex flex-col items-center">
+                            <span class="text-3xl font-extrabold text-white" id="an-score-value">82</span>
+                            <span class="text-[10px] text-slate-400 uppercase font-bold">Out of 100</span>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700">Application-Generated Evaluation</p>
+                </div>
+
+                <!-- Candidate Info Card -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4 lg:col-span-2">
+                    <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-2">Candidate Profile Overview</h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-envelope"></i></div>
+                            <div>
+                                <p class="text-xs text-slate-400">Email Address</p>
+                                <p class="font-medium text-slate-200" id="an-email">candidate@example.com</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-phone"></i></div>
+                            <div>
+                                <p class="text-xs text-slate-400">Phone Number</p>
+                                <p class="font-medium text-slate-200" id="an-phone">+1 (555) 019-2834</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-location-dot"></i></div>
+                            <div>
+                                <p class="text-xs text-slate-400">Location</p>
+                                <p class="font-medium text-slate-200" id="an-location">Bangalore, India</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center"><i class="fa-brands fa-github"></i></div>
+                            <div>
+                                <p class="text-xs text-slate-400">GitHub Profile</p>
+                                <a id="an-github" href="#" target="_blank" class="font-medium text-indigo-400 hover:underline truncate block max-w-[200px]">github.com/candidate</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Score Breakdown Pills -->
+                    <div class="pt-2">
+                        <p class="text-xs font-semibold text-slate-400 mb-2">Score Components Breakdown:</p>
+                        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center text-xs">
+                            <div class="p-2 bg-slate-800 rounded-lg"><span class="block text-slate-400 text-[10px]">Skills (30%)</span><span class="font-bold text-white" id="sb-skills">90%</span></div>
+                            <div class="p-2 bg-slate-800 rounded-lg"><span class="block text-slate-400 text-[10px]">Exp (20%)</span><span class="font-bold text-white" id="sb-exp">85%</span></div>
+                            <div class="p-2 bg-slate-800 rounded-lg"><span class="block text-slate-400 text-[10px]">Projects (20%)</span><span class="font-bold text-white" id="sb-projects">85%</span></div>
+                            <div class="p-2 bg-slate-800 rounded-lg"><span class="block text-slate-400 text-[10px]">Edu (15%)</span><span class="font-bold text-white" id="sb-edu">95%</span></div>
+                            <div class="p-2 bg-slate-800 rounded-lg"><span class="block text-slate-400 text-[10px]">Certs (10%)</span><span class="font-bold text-white" id="sb-certs">75%</span></div>
+                            <div class="p-2 bg-slate-800 rounded-lg"><span class="block text-slate-400 text-[10px]">Comp (5%)</span><span class="font-bold text-white" id="sb-comp">100%</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Improvement Recommendations Box -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i> Score Improvement Recommendations
+                </h3>
+                <ul class="space-y-2 text-sm text-slate-300 list-disc list-inside" id="an-recommendations-list">
+                    <li>Add more technical skills to your profile.</li>
+                </ul>
+            </div>
+
+            <!-- Categorized Skills Grid -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-6">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-indigo-400"></i> Categorized Technical Skills (<span id="an-skill-count">0</span> Detected)
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="an-skills-container">
+                    <!-- Dynamic Skill Category Cards -->
+                </div>
+            </div>
+
+            <!-- Education & Experience & Projects -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Education & Certifications -->
+                <div class="space-y-6">
+                    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-graduation-cap text-indigo-400"></i> Education</h3>
+                        <div id="an-education-list" class="space-y-3"></div>
+                    </div>
+
+                    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-certificate text-indigo-400"></i> Certifications</h3>
+                        <div id="an-certifications-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <!-- Projects & Experience -->
+                <div class="space-y-6">
+                    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-diagram-project text-indigo-400"></i> Key Projects</h3>
+                        <div id="an-projects-list" class="space-y-4"></div>
+                    </div>
+
+                    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-briefcase text-indigo-400"></i> Experience History</h3>
+                        <div id="an-experience-list" class="space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 4: JOB RECOMMENDATIONS & SKILL GAP PAGE ================= -->
+        <section id="view-recommendations" class="hidden space-y-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Recommended Jobs & Skill Gap Analysis</h2>
+                    <p class="text-slate-400 text-sm">Calculated using TF-IDF Cosine Text Similarity + Multi-Factor Skill & Experience Matching</p>
+                </div>
+                <div class="bg-slate-900 px-4 py-2 rounded-xl border border-slate-800 text-sm text-slate-300">
+                    Top Matching Role: <span class="font-bold text-indigo-400" id="rec-top-role">AI Engineer</span>
+                </div>
+            </div>
+
+            <!-- Job Cards List -->
+            <div class="space-y-6" id="recommendations-container">
+                <!-- Dynamic Job Recommendation Cards -->
+            </div>
+        </section>
+
+        <!-- ================= PAGE 5: JOB SEARCH & FILTER PAGE ================= -->
+        <section id="view-jobs" class="hidden space-y-8">
+            <div class="space-y-2">
+                <h2 class="text-3xl font-bold text-white">Job Search & Explorer</h2>
+                <p class="text-slate-400">Search and filter through 30+ sample job listings in AI, ML, Data Science, and Development</p>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="text-xs text-slate-400 font-semibold block mb-1">Search Role / Keyword</label>
+                        <input type="text" id="filter-q" placeholder="e.g. Machine Learning, Python..." class="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-slate-400 font-semibold block mb-1">Location</label>
+                        <select id="filter-location" class="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                            <option value="All">All Locations</option>
+                            <option value="Bangalore">Bangalore, India</option>
+                            <option value="San Francisco">San Francisco, CA</option>
+                            <option value="New York">New York, NY</option>
+                            <option value="Seattle">Seattle, WA</option>
+                            <option value="Remote">Remote</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-slate-400 font-semibold block mb-1">Employment Type</label>
+                        <select id="filter-type" class="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                            <option value="All">All Types</option>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Internship">Internship</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-end">
+                        <button onclick="executeJobSearch()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded-lg font-medium text-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass"></i> Search Jobs
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jobs Results Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="jobs-grid-container">
+                <!-- Dynamic Jobs Grid -->
+            </div>
+        </section>
+
+        <!-- ================= PAGE 6: INTERACTIVE DASHBOARD PAGE ================= -->
+        <section id="view-dashboard" class="hidden space-y-8">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Interactive Analytics Dashboard</h2>
+                    <p class="text-slate-400 text-sm">Visual metrics breakdown and candidate skill analytics</p>
+                </div>
+            </div>
+
+            <!-- Key Metric Cards Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
+                    <p class="text-xs text-slate-400">Resume Score</p>
+                    <p class="text-2xl font-extrabold text-indigo-400 mt-1" id="dash-score">82</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
+                    <p class="text-xs text-slate-400">Skills Detected</p>
+                    <p class="text-2xl font-extrabold text-violet-400 mt-1" id="dash-skills">12</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
+                    <p class="text-xs text-slate-400">Key Projects</p>
+                    <p class="text-2xl font-extrabold text-pink-400 mt-1" id="dash-projects">2</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
+                    <p class="text-xs text-slate-400">Certifications</p>
+                    <p class="text-2xl font-extrabold text-emerald-400 mt-1" id="dash-certs">2</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
+                    <p class="text-xs text-slate-400">Experience (Yrs)</p>
+                    <p class="text-2xl font-extrabold text-amber-400 mt-1" id="dash-exp">2.0</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
+                    <p class="text-xs text-slate-400">Top Match %</p>
+                    <p class="text-2xl font-extrabold text-cyan-400 mt-1" id="dash-top-match">92%</p>
+                </div>
+            </div>
+
+            <!-- Dynamic Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Chart 1: Skills Category Distribution -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <h3 class="text-lg font-bold text-white">Skills Category Distribution</h3>
+                    <div class="relative h-64">
+                        <canvas id="chart-skills-dist"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Top Job Match Comparison -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <h3 class="text-lg font-bold text-white">Top Recommended Job Matches (%)</h3>
+                    <div class="relative h-64">
+                        <canvas id="chart-job-matches"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-8 text-center text-xs text-slate-500 space-y-2">
+        <p>© 2026 AI Resume Screening & Job Recommendation System | B.Tech Artificial Intelligence Project</p>
+        <p>Built with FastAPI, Python NLP, Scikit-Learn, SQLite, and React UI Dashboard</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
